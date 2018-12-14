@@ -6,11 +6,14 @@ import android.os.AsyncTask;
 import android.widget.ImageView;
 
 import java.net.URL;
+import java.util.HashMap;
 
-public class ImageLoadTask extends AsyncTask<String, Void, Bitmap> {
+public class ImageLoadTask extends AsyncTask<Void, Void, Bitmap> {
 
     private String urlStr;
     private ImageView imageView;
+
+    private static HashMap<String, Bitmap> bitmapHash = new HashMap<String, Bitmap>();
 
     public ImageLoadTask(String urlSTr, ImageView imageView) {
         this.urlStr = urlSTr;
@@ -22,13 +25,23 @@ public class ImageLoadTask extends AsyncTask<String, Void, Bitmap> {
     }
 
     @Override
-    protected Bitmap doInBackground(String... params) {
+    protected Bitmap doInBackground(Void... params) {
         Bitmap bitmap = null;
 
         try {
+//            if(bitmapHash.containsKey(urlStr)) {
+//                Bitmap oldbitmap = bitmapHash.remove(urlStr);
+//                if(oldbitmap != null && !oldbitmap.isRecycled()) {
+//                    oldbitmap.recycle();
+//                    oldbitmap = null;
+//
+//                    return null;
+//                }
+//            }
+
             URL url = new URL(urlStr);
             bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-
+            bitmapHash.put(urlStr, bitmap);
 
         } catch (Exception e) {
             e.printStackTrace();
