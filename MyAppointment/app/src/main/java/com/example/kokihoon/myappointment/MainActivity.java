@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -177,6 +178,11 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(singerItem.link)));
                 }
             });
+
+            RatingBar ratingBar = holder.ratingBar;
+            ratingBar.setIsIndicator(true);
+            ratingBar.setRating(Float.parseFloat(singerItem.userRating)/2);
+
             TextView titleView = holder.titleView;
             titleView.setText(singerItem.title);
 
@@ -207,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
         public TextView actorView;
         public TextView directorView;
         public ImageView imageView;
+        public RatingBar ratingBar;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -215,6 +222,8 @@ public class MainActivity extends AppCompatActivity {
             pubDateView = (TextView)itemView.findViewById(R.id.pubDateView1);
             actorView = (TextView)itemView.findViewById(R.id.actorView1);
             directorView = (TextView)itemView.findViewById(R.id.directorView1);
+            ratingBar = (RatingBar)itemView.findViewById(R.id.ratingBar);
+
         }
 
     }
