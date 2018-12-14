@@ -1,15 +1,21 @@
 package com.example.kokihoon.myappointment;
 
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -20,13 +26,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.kokihoon.myappointment.data.MovieList;
 import com.example.kokihoon.myappointment.data.SingerItem;
-import com.example.kokihoon.myappointment.data.SingerItemView;
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,10 +38,9 @@ public class MainActivity extends AppCompatActivity {
     String search;
     String clientId = "4h8XPYoAqJR2jFWefxLU";//애플리케이션 클라이언트 아이디값";
     String clientSecret = "0Hopez1sls";//애플리케이션 클라이언트 시크릿값";
-    ListView listView;
-    SingerAdapter adapter;
-    MovieList movieList;
-    ImageView imageView;
+    RecyclerView mRecyclerView;
+    RecyclerView.LayoutManager mLayoutManager;
+    private GestureDetector gestureDetector;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -48,21 +48,24 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         editText = (EditText)findViewById(R.id.editText);
-        imageView = (ImageView)findViewById(R.id.imageView);
-        listView = (ListView)findViewById(R.id.listView);
-
-
-
-        adapter = new SingerAdapter();
+        mRecyclerView = findViewById(R.id.recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
 
         Button button = (Button)findViewById(R.id.button);
+
+        gestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener(){
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                return true;
+            }
+        });
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 search = editText.getText().toString();
-                System.out.println(search + "123123123");
-
                 if(search.getBytes().length <= 0) {
                     Toast.makeText(getApplicationContext(), "검색어를 입력하세요.", Toast.LENGTH_LONG).show();
                 }
@@ -78,17 +81,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void sendImageRequest(String url) {
-
-        ImageLoadTask task = new ImageLoadTask(url, imageView);
-        task.execute();
-    }
-
     public void sendRequest() {
         try {
             String text = URLEncoder.encode(search, "UTF-8");
-            System.out.println("123123123 " + text);
-            String apiURL = "https://"+ AppHelper.host+ text+"&display=100"; // json 결과\
+            String apiURL = "https://"+ AppHelper.host+ text+"&display=100"; // json 결과
 
             StringRequest request = new StringRequest(
                     Request.Method.GET,
@@ -97,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(String response) {
                             System.out.println("응답  -> " + response);
-                            processResponse(response, search);
+                            processResponse(response);
                         }
                     },
                     new Response.ErrorListener() {
@@ -126,63 +122,96 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void processResponse(String response, String text) {
+    public void processResponse(String response) {
         Gson gson = new Gson();
+
+        ArrayList<SingerItem> movieLists = new ArrayList<SingerItem>();
 
         MovieList movieList = gson.fromJson(response, MovieList.class);
         if(movieList.items.size() == 0) {
             Toast.makeText(getApplicationContext(), "'" + search + "' 에 대한 검색이 없습니다.", Toast.LENGTH_LONG).show();
         }
         for(int i = 0; i < movieList.items.size(); i++) {
-            adapter.addItem(new SingerItem(movieList.items.get(i).getLink(), movieList.items.get(i).getImage(), movieList.items.get(i).getSubtitle(), movieList.items.get(i).getTitle(), movieList.items.get(i).getPuDate(), movieList.items.get(i).getDirector(), movieList.items.get(i).getActor(), movieList.items.get(i).getUserRating()));
+            SingerItem singerItem = new SingerItem(movieList.items.get(i).link, movieList.items.get(i).image, movieList.items.get(i).subtitle, movieList.items.get(i).title, movieList.items.get(i).pubDate, movieList.items.get(i).director, movieList.items.get(i).actor, movieList.items.get(i).userRating);
+            movieLists.add(singerItem);
         }
-        listView.setAdapter(adapter);
+        SingerAdapter singerAdapter = new SingerAdapter(movieLists);
+        mRecyclerView.setAdapter(singerAdapter);
     }
 
 
-    class SingerAdapter extends BaseAdapter {
-        ArrayList<SingerItem> items = new ArrayList<SingerItem>();
+    class SingerAdapter extends RecyclerView.Adapter<ViewHolder> {
 
-        @Override
-        public int getCount() {
-            return items.size();
-        }
+        private ArrayList<SingerItem> movies;
 
-        @Override
-        public Object getItem(int position) {
-            return items.get(position);
+        SingerAdapter(ArrayList<SingerItem> items1) {
+            this.movies = items1;
         }
 
 
-        public void addItem(SingerItem item) {
-            items.add(item);
-        }
         @Override
-        public long getItemId(int position) {
-            return position;
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            Context context = parent.getContext();
+            LayoutInflater layoutInflater = LayoutInflater.from(context);
+
+            View itemView = layoutInflater.inflate(R.layout.singer_item, parent, false);
+
+
+            ViewHolder viewHolder = new ViewHolder(itemView);
+            return viewHolder;
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            SingerItem singerItem = movies.get(position);
+
+//            ImageView imageView = holder.imageView;
+//            sendImageRequest(holder.imageView.toString(), imageView);
+
+            TextView titleView = holder.titleView;
+            titleView.setText(singerItem.title);
+
+            TextView pubDateView = holder.pubDateView;
+            pubDateView.setText(singerItem.pubDate);
+
+            TextView actorView = holder.actorView;
+            actorView.setText(singerItem.actor);
+
+            TextView directorView = holder.directorView;
+            directorView.setText(singerItem.director);
+        }
+
+        @Override
+        public int getItemCount() {
+            return movies.size();
+        }
+
+        public void sendImageRequest(String str, ImageView imageView) {
+            ImageLoadTask task = new ImageLoadTask(str, imageView);
+            task.execute();
+        }
 
 
-            SingerItemView view = null;
 
-            if(convertView == null) {
-                view = new SingerItemView(getApplicationContext());
-            }else {
-                view = (SingerItemView)convertView;
-            }
+    }
 
-//            sendImageRequest(items.get(position).getImage());
-            view.setTitle(items.get(position).getTitle());
-            view.setActor(items.get(position).getActor());
-            view.setDirector(items.get(position).getDirector());
-            view.setPuDate(items.get(position).getPuDate());
+    class ViewHolder extends RecyclerView.ViewHolder {
+        public TextView titleView;
+        public TextView pubDateView;
+        public TextView actorView;
+        public TextView directorView;
+        public ImageView imageView;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+//            imageView = (ImageView)imageView.findViewById(R.id.imageView);
+            titleView = (TextView)itemView.findViewById(R.id.titleView);
+            pubDateView = (TextView)itemView.findViewById(R.id.pubDateView1);
+            actorView = (TextView)itemView.findViewById(R.id.actorView1);
+            directorView = (TextView)itemView.findViewById(R.id.directorView1);
 
 
 
-            return view;
         }
     }
 }

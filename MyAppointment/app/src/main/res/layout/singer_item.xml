@@ -26,7 +26,7 @@
             android:textColor="@color/colorPrimaryDark"/>
 
         <TextView
-            android:id="@+id/pubDateView"
+            android:id="@+id/pubDateView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="개봉 날짜"
@@ -34,7 +34,7 @@
             android:textColor="@android:color/holo_orange_dark"/>
 
         <TextView
-            android:id="@+id/directorView"
+            android:id="@+id/directorView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="감독"
@@ -43,7 +43,7 @@
 
 
         <TextView
-            android:id="@+id/actorView"
+            android:id="@+id/actorView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="배우들"
