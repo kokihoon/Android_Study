@@ -1,6 +1,8 @@
 package com.example.kokihoon.myappointment;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -162,12 +164,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            SingerItem singerItem = movies.get(position);
+        public void onBindViewHolder(final ViewHolder holder, int position) {
+            final SingerItem singerItem = movies.get(position);
 
 //            ImageView imageView = holder.imageView;
 //            sendImageRequest(holder.imageView.toString(), imageView);
 
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(singerItem.link)));
+                }
+            });
             TextView titleView = holder.titleView;
             titleView.setText(singerItem.title);
 
@@ -190,12 +198,9 @@ public class MainActivity extends AppCompatActivity {
             ImageLoadTask task = new ImageLoadTask(str, imageView);
             task.execute();
         }
-
-
-
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder{
         public TextView titleView;
         public TextView pubDateView;
         public TextView actorView;
@@ -209,9 +214,7 @@ public class MainActivity extends AppCompatActivity {
             pubDateView = (TextView)itemView.findViewById(R.id.pubDateView1);
             actorView = (TextView)itemView.findViewById(R.id.actorView1);
             directorView = (TextView)itemView.findViewById(R.id.directorView1);
-
-
-
         }
+
     }
 }
