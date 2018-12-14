@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
             movieLists.add(singerItem);
         }
         SingerAdapter singerAdapter = new SingerAdapter(movieLists);
+        singerAdapter.notifyDataSetChanged();
         mRecyclerView.setAdapter(singerAdapter);
     }
 
@@ -167,8 +168,8 @@ public class MainActivity extends AppCompatActivity {
         public void onBindViewHolder(final ViewHolder holder, int position) {
             final SingerItem singerItem = movies.get(position);
 
-//            ImageView imageView = holder.imageView;
-//            sendImageRequest(holder.imageView.toString(), imageView);
+            ImageView imageView = holder.imageView;
+            sendImageRequest(singerItem.image, imageView);
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -209,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
 
         public ViewHolder(View itemView) {
             super(itemView);
-//            imageView = (ImageView)imageView.findViewById(R.id.imageView);
+            imageView = (ImageView)itemView.findViewById(R.id.imageView);
             titleView = (TextView)itemView.findViewById(R.id.titleView);
             pubDateView = (TextView)itemView.findViewById(R.id.pubDateView1);
             actorView = (TextView)itemView.findViewById(R.id.actorView1);
