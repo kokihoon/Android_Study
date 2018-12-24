@@ -1,7 +1,9 @@
 package com.example.kokihoon.mydatabase;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -92,11 +94,15 @@ public class MainActivity extends AppCompatActivity {
 
     public void openDatabase(String databaseName) {
         println("openDatabase() 호출됨.");
-        database = openOrCreateDatabase(databaseName, MODE_PRIVATE, null);
+//        database = openOrCreateDatabase(databaseName, MODE_PRIVATE, null);
+//
+//        if(database != null) {
+//            println("데이터베이스 오픈됨.");
+//        }
 
-        if(database != null) {
-            println("데이터베이스 오픈됨.");
-        }
+        DatabaseHelper helper = new DatabaseHelper(this, databaseName, null, 1);
+        database = helper.getWritableDatabase();
+
     }
 
     public void println(String data) {
@@ -149,6 +155,42 @@ public class MainActivity extends AppCompatActivity {
             }
 
             cursor.close();
+        }
+    }
+
+    class DatabaseHelper extends SQLiteOpenHelper {
+
+        public DatabaseHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
+            super(context, name, factory, version);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            println("crateTable() 호출됨.");
+            String tableName = "customer";
+
+            String sql = "create table if not exists " + tableName + " (_id integer PRIMARY KEY autoincrement, name text, age integer, mobile text)";
+            db.execSQL(sql);
+
+            println("테이블 생성됨.");
+
+
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            println("onUpgrade 호출됨 : " + oldVersion +", " + newVersion);
+
+            if(newVersion > 1) {
+                String tableName = "customer";
+                db.execSQL("drop table if exists " + tableName);
+                println("테이블 삭제함.");
+
+                String sql = "create table if not exists " + tableName + " (_id integer PRIMARY KEY autoincrement, name text, age integer, mobile text)";
+                db.execSQL(sql);
+
+                println("테이블 새로 생성됨.");
+            }
         }
     }
 }
