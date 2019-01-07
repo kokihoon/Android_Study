@@ -1,22 +1,25 @@
 package com.example.kokihoon.mypager;
 
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
-
+    ViewPager pager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ViewPager pager = (ViewPager) findViewById(R.id.pager);
+        pager = (ViewPager) findViewById(R.id.pager);
         pager.setOffscreenPageLimit(3);
 
         MoviePagerAdapter adapter = new MoviePagerAdapter(getSupportFragmentManager());
@@ -30,6 +33,15 @@ public class MainActivity extends AppCompatActivity {
         adapter.addItem(fragment3);
 
         pager.setAdapter(adapter);
+
+        Button button = (Button) findViewById(R.id.button);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pager.setCurrentItem(1);
+            }
+        });
     }
 
     class MoviePagerAdapter extends FragmentStatePagerAdapter {
@@ -51,6 +63,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             return items.size();
+        }
+
+        @Nullable
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return "페이지 " + position;
         }
     }
 
